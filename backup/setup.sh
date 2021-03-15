@@ -1,34 +1,59 @@
 #!/bin/bash
 
-# Ask user for deploy domain.
-echo "What is the deploy domain? example: deploy.danielmarkink.nl"
-read deploydomain
-echo $deploydomain > /deploy.txt
+# Check if all args are given
+if [ -z "$1" ]
+then
+	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <backup disk (Optional)>"
+    exit 1
+else
+    echo $1 > /deploy.txt
+fi
+
+if [ -z "$3" ]
+then
+	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <backup disk (Optional)>"
+    exit 1
+else
+	echo ''
+fi
+
+if [ -z "$4" ]
+then
+	adddisk=0
+else
+	adddisk=1
+fi
+
+# check if adddisk = 1
+if [[ "$adddisk" == 1 ]]
+then
+	(echo n; echo ""; echo ""; echo ""; echo ""; echo w; echo y; echo q) | fdisk $(echo $4)
+	mkfs.ext4 $4
+	mkdir /backups
+	mount $4 /backups
+	echo "${4} /backups ext4 defaults 1 2" >> /etc/fstab
+else
+	echo ''
+fi
 
 # Get the deploy domain.
 dpdomain=`cat /deploy.txt`
 
-echo "Is this a VMware VM?"
-read input
-case $input in
+echo "dpserver: $1"
+echo "VMware: $2"
+echo "Backup domain: $3"
+echo "disk: $4"
+
+case $2 in
 	[yY][eE][sS]|[yY])
-		# Since it is a VMware VM server we need to add a new backup disk.
-		diskinfo=`fdisk -l | grep Disk`
-		printf "${diskinfo}"
-		read -p "Where is the backup disk located? " disk
-		(echo n; echo ""; echo ""; echo ""; echo ""; echo w; echo y; echo q) | fdisk $(echo $disk)
-		mkfs.ext4 $disk
-		mkdir /backups
-		mount $disk /backups
-		echo "${disk} /backups ext4 defaults 1 2" >> /etc/fstab
 		# Install the default settings for the VMware VM server.
-		wget -O standard-settings.sh https://$dpdomain/debian/reuse-scripts/vmware/scripts/vmware-settings.sh
+		wget -O vmware-settings.sh https://$dpdomain/debian/reuse-scripts/vmware/scripts/vmware-settings.sh
 		chmod 777 vmware-settings.sh
 		./vmware-settings.sh
 		# Install and setup the vsFTPd server.
 		wget -O setup-vsftpd.sh https://$dpdomain/debian/reuse-scripts/standard/scripts/setup-vsftpd.sh
 		chmod 777 setup-vsftpd.sh
-		./setup-vsftpd.sh
+		./setup-vsftpd.sh $3
 	;;
 	[nN][oO]|[nN])
 		# Install the default settings for the server.
@@ -40,10 +65,10 @@ case $input in
 		# Install and setup the vsFTPd server.
 		wget -O setup-vsftpd.sh https://$dpdomain/debian/reuse-scripts/standard/scripts/setup-vsftpd.sh
 		chmod 777 setup-vsftpd.sh
-		./setup-vsftpd.sh
+		./setup-vsftpd.sh $3
 	;;
 	*)
-		echo "Invalid input..."
+		echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <backup disk (Optional)>"
 		exit 1
 	;;
 esac

@@ -1,16 +1,18 @@
 #!/bin/bash
 
-# Ask user for deploy domain.
-echo "What is the deploy domain? example: deploy.danielmarkink.nl"
-read deploydomain
-echo $deploydomain > /deploy.txt
+# Check if all args are given
+if [ -z "$0" ]
+then
+	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no>"
+    exit 1
+else
+    echo $0 > /deploy.txt
+fi
 
 # Get the deploy domain.
 dpdomain=`cat /deploy.txt`
 
-echo "Is this a VMware VM?"
-read input
-case $input in
+case $1 in
 	[yY][eE][sS]|[yY])
 		# Install the default settings for the VMware VM server.
 		wget -O standard-settings.sh https://$dpdomain/debian/reuse-scripts/vmware/scripts/vmware-settings.sh
@@ -24,7 +26,7 @@ case $input in
 		./standard-settings.sh
 	;;
 	*)
-		echo "Invalid input..."
+		echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no>"
 		exit 1
 	;;
 esac
