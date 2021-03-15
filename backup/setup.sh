@@ -29,7 +29,6 @@ if [[ "$adddisk" == 1 ]]
 then
 	(echo n; echo ""; echo ""; echo ""; echo ""; echo w; echo q) | fdisk $(echo $5)
 	mkfs.ext4 $5
-	(echo y)
 	mkdir /backups
 	mount $5 /backups
 	echo "${5} /backups ext4 defaults 1 2" >> /etc/fstab
