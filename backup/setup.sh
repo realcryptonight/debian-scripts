@@ -3,7 +3,7 @@
 # Check if all args are given
 if [ -z "$1" ]
 then
-	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <backup disk (Optional)>"
+	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <use certbot for ssl yes|no> <backup disk (Optional)>"
     exit 1
 else
     echo $1 > /deploy.txt
@@ -11,13 +11,13 @@ fi
 
 if [ -z "$3" ]
 then
-	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <backup disk (Optional)>"
+	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <use certbot for ssl yes|no> <backup disk (Optional)>"
     exit 1
 else
 	echo ''
 fi
 
-if [ -z "$4" ]
+if [ -z "$5" ]
 then
 	adddisk=0
 else
@@ -27,11 +27,12 @@ fi
 # check if adddisk = 1
 if [[ "$adddisk" == 1 ]]
 then
-	(echo n; echo ""; echo ""; echo ""; echo ""; echo w; echo y; echo q) | fdisk $(echo $4)
-	mkfs.ext4 $4
+	(echo n; echo ""; echo ""; echo ""; echo ""; echo w; echo q) | fdisk $(echo $5)
+	mkfs.ext4 $5
+	(echo y)
 	mkdir /backups
-	mount $4 /backups
-	echo "${4} /backups ext4 defaults 1 2" >> /etc/fstab
+	mount $5 /backups
+	echo "${5} /backups ext4 defaults 1 2" >> /etc/fstab
 else
 	echo ''
 fi
@@ -39,10 +40,18 @@ fi
 # Get the deploy domain.
 dpdomain=`cat /deploy.txt`
 
-echo "dpserver: $1"
-echo "VMware: $2"
-echo "Backup domain: $3"
-echo "disk: $4"
+case $4 in
+	[yY][eE][sS]|[yY])
+		echo ''
+	;;
+	[nN][oO]|[nN])
+		echo ''
+	;;
+	*)
+		echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <use certbot for ssl yes|no> <backup disk (Optional)>"
+		exit 1
+	;;
+esac
 
 case $2 in
 	[yY][eE][sS]|[yY])
@@ -53,7 +62,7 @@ case $2 in
 		# Install and setup the vsFTPd server.
 		wget -O setup-vsftpd.sh https://$dpdomain/debian/reuse-scripts/standard/scripts/setup-vsftpd.sh
 		chmod 777 setup-vsftpd.sh
-		./setup-vsftpd.sh $3
+		./setup-vsftpd.sh $3 $4
 	;;
 	[nN][oO]|[nN])
 		# Install the default settings for the server.
@@ -65,10 +74,10 @@ case $2 in
 		# Install and setup the vsFTPd server.
 		wget -O setup-vsftpd.sh https://$dpdomain/debian/reuse-scripts/standard/scripts/setup-vsftpd.sh
 		chmod 777 setup-vsftpd.sh
-		./setup-vsftpd.sh $3
+		./setup-vsftpd.sh $3 $4
 	;;
 	*)
-		echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <backup disk (Optional)>"
+		echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup domain> <use certbot for ssl yes|no> <backup disk (Optional)>"
 		exit 1
 	;;
 esac
@@ -77,6 +86,21 @@ esac
 wget -O 10-sysinfo https://$dpdomain/debian/backup/10-sysinfo
 mv 10-sysinfo /etc/update-motd.d/
 chmod 777 /etc/update-motd.d/*
+
+case $4 in
+	[yY][eE][sS]|[yY])
+		echo "We are almost done. You only need to add the SSL Cetificate and start vsFTPd"
+		echo "Go to /etc/certs/$3/ and add the following files:"
+		echo "The full chain as 'fullchain.pem' and th private key as 'privkey.pem'"
+		echo "After that type: 'systemctl start vsftpd'"
+	;;
+	[nN][oO]|[nN])
+		echo "All done"
+	;;
+	*)
+		exit 1
+	;;
+esac
 
 # Clean up.
 rm setup.sh

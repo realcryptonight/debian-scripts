@@ -3,8 +3,35 @@
 # Get the deploy 1.
 dpdomain=`cat /deploy.txt`
 
-# Install required software.
-apt -y install vsftpd certbot
+case $2 in
+	[yY][eE][sS]|[yY])
+		apt -y install vsftpd certbot
+		systemctl stop vsftpd
+		# Setup FTP SSL.
+		certbot certonly --standalone --register-unsafely-without-email --agree-tos --preferred-challenges http -d $1
+		sed -i "s/rsa_cert_file=\/etc\/ssl\/certs\/ssl-cert-snakeoil.pem/rsa_cert_file=\/etc\/letsencrypt\/live\/$1\/fullchain.pem/g" /etc/vsftpd.conf
+		sed -i "s/rsa_private_key_file=\/etc\/ssl\/private\/ssl-cert-snakeoil.key/rsa_private_key_file=\/etc\/letsencrypt\/live\/$1\/privkey.pem/g" /etc/vsftpd.conf
+		sed -i 's/ssl_enable=NO/ssl_enable=YES/g' /etc/vsftpd.conf
+		echo "renew_hook = systemctl restart vsftpd" >> /etc/letsencrypt/renewal/$1.conf
+		systemctl start vsftpd
+	;;
+	[nN][oO]|[nN])
+		apt -y install vsftpd
+		systemctl stop vsftpd
+		# Setup FTP SSL.
+		echo "no" > /hasssl.txt
+		mkdir /etc/certs
+		mkdir /etc/certs/$1
+		chmod 755 /etc/certs/
+		chmod 755 /etc/certs/$1/
+		sed -i "s/rsa_cert_file=\/etc\/ssl\/certs\/ssl-cert-snakeoil.pem/rsa_cert_file=\/etc\/letsencrypt\/live\/$1\/fullchain.pem/g" /etc/vsftpd.conf
+		sed -i "s/rsa_private_key_file=\/etc\/ssl\/private\/ssl-cert-snakeoil.key/rsa_private_key_file=\/etc\/letsencrypt\/live\/$1\/privkey.pem/g" /etc/vsftpd.conf
+		sed -i 's/ssl_enable=NO/ssl_enable=YES/g' /etc/vsftpd.conf
+	;;
+	*)
+		exit 1
+	;;
+esac
 
 # Changing vsFTPD settings.
 echo "# Custom settings." >> /etc/vsftpd.conf
@@ -17,18 +44,10 @@ echo "pasv_max_port=50500" >> /etc/vsftpd.conf
 echo "userlist_enable=YES" >> /etc/vsftpd.conf
 echo "userlist_file=/etc/vsftpd.userlist" >> /etc/vsftpd.conf
 echo "userlist_deny=NO" >> /etc/vsftpd.conf
-
-# Setup FTP SSL and configure vsFTPd to use it.
-#certbot certonly --standalone --register-unsafely-without-email --agree-tos --preferred-challenges http -d $1
-echo "renew_hook = systemctl restart vsftpd" >> /etc/letsencrypt/renewal/$1.conf
-sed -i "s/rsa_cert_file=\/etc\/ssl\/certs\/ssl-cert-snakeoil.pem/rsa_cert_file=\/etc\/letsencrypt\/live\/$1\/fullchain.pem/g" /etc/vsftpd.conf
-sed -i "s/rsa_private_key_file=\/etc\/ssl\/private\/ssl-cert-snakeoil.key/rsa_private_key_file=\/etc\/letsencrypt\/live\/$1\/privkey.pem/g" /etc/vsftpd.conf
-sed -i 's/ssl_enable=NO/ssl_enable=YES/g' /etc/vsftpd.conf
 echo "implicit_ssl=YES" >> /etc/vsftpd.conf
 echo "listen_port=21" >> /etc/vsftpd.conf
 echo "force_local_data_ssl=YES" >> /etc/vsftpd.conf
 echo "force_local_logins_ssl=YES" >> /etc/vsftpd.conf
-systemctl restart vsftpd
 
 # Prevent FTP users from using SSH.
 echo '#!/bin/sh' > /bin/ftponly
@@ -36,9 +55,9 @@ echo 'echo "This account is blocked from SSH."' >> /bin/ftponly
 chmod a+x /bin/ftponly
 echo "/bin/ftponly" >> /etc/shells
 
-# Get the script to add more users later.
+# Get the script to add users.
 wget -O add_ftp_user.sh https://$dpdomain/debian/reuse-scripts/standard/scripts/add_ftp_user.sh
-chmod 777 add_ftp_user.sh
+chmod 744 add_ftp_user.sh
 
 # Clean up.
 rm setup-vsftpd.sh
