@@ -8,7 +8,7 @@ case $2 in
 		apt -y install vsftpd certbot
 		systemctl stop vsftpd
 		# Setup FTP SSL.
-		certbot certonly --standalone --register-unsafely-without-email --agree-tos --preferred-challenges http -d $1
+		#certbot certonly --standalone --register-unsafely-without-email --agree-tos --preferred-challenges http -d $1
 		sed -i "s/rsa_cert_file=\/etc\/ssl\/certs\/ssl-cert-snakeoil.pem/rsa_cert_file=\/etc\/letsencrypt\/live\/$1\/fullchain.pem/g" /etc/vsftpd.conf
 		sed -i "s/rsa_private_key_file=\/etc\/ssl\/private\/ssl-cert-snakeoil.key/rsa_private_key_file=\/etc\/letsencrypt\/live\/$1\/privkey.pem/g" /etc/vsftpd.conf
 		sed -i 's/ssl_enable=NO/ssl_enable=YES/g' /etc/vsftpd.conf
@@ -24,12 +24,22 @@ case $2 in
 		mkdir /etc/certs/$1
 		chmod 755 /etc/certs/
 		chmod 755 /etc/certs/$1/
-		sed -i "s/rsa_cert_file=\/etc\/ssl\/certs\/ssl-cert-snakeoil.pem/rsa_cert_file=\/etc\/letsencrypt\/live\/$1\/fullchain.pem/g" /etc/vsftpd.conf
-		sed -i "s/rsa_private_key_file=\/etc\/ssl\/private\/ssl-cert-snakeoil.key/rsa_private_key_file=\/etc\/letsencrypt\/live\/$1\/privkey.pem/g" /etc/vsftpd.conf
+		sed -i "s/rsa_cert_file=\/etc\/ssl\/certs\/ssl-cert-snakeoil.pem/rsa_cert_file=\/etc\/certs\/$1\/fullchain.pem/g" /etc/vsftpd.conf
+		sed -i "s/rsa_private_key_file=\/etc\/ssl\/private\/ssl-cert-snakeoil.key/rsa_private_key_file=\/etc\/certs\/$1\/privkey.pem/g" /etc/vsftpd.conf
 		sed -i 's/ssl_enable=NO/ssl_enable=YES/g' /etc/vsftpd.conf
 	;;
 	*)
-		exit 1
+		apt -y install vsftpd
+		systemctl stop vsftpd
+		# Setup FTP SSL.
+		echo "no" > /hasssl.txt
+		mkdir /etc/certs
+		mkdir /etc/certs/$1
+		chmod 755 /etc/certs/
+		chmod 755 /etc/certs/$1/
+		sed -i "s/rsa_cert_file=\/etc\/ssl\/certs\/ssl-cert-snakeoil.pem/rsa_cert_file=\/etc\/certs\/$1\/fullchain.pem/g" /etc/vsftpd.conf
+		sed -i "s/rsa_private_key_file=\/etc\/ssl\/private\/ssl-cert-snakeoil.key/rsa_private_key_file=\/etc\/certs\/$1\/privkey.pem/g" /etc/vsftpd.conf
+		sed -i 's/ssl_enable=NO/ssl_enable=YES/g' /etc/vsftpd.conf
 	;;
 esac
 

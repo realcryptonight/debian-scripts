@@ -89,16 +89,19 @@ chmod 777 /etc/update-motd.d/*
 
 case $4 in
 	[yY][eE][sS]|[yY])
+		echo "All done"
+	;;
+	[nN][oO]|[nN])
 		echo "We are almost done. You only need to add the SSL Cetificate and start vsFTPd"
 		echo "Go to /etc/certs/$3/ and add the following files:"
 		echo "The full chain as 'fullchain.pem' and th private key as 'privkey.pem'"
 		echo "After that type: 'systemctl start vsftpd'"
 	;;
-	[nN][oO]|[nN])
-		echo "All done"
-	;;
 	*)
-		exit 1
+		echo "We are almost done. You only need to add the SSL Cetificate and start vsFTPd"
+		echo "Go to /etc/certs/$3/ and add the following files:"
+		echo "The full chain as 'fullchain.pem' and th private key as 'privkey.pem'"
+		echo "After that type: 'systemctl start vsftpd'"
 	;;
 esac
 
