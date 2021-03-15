@@ -24,7 +24,6 @@ else
 	adddisk=1
 fi
 
-# check if adddisk = 1
 if [[ "$adddisk" == 1 ]]
 then
 	(echo n; echo ""; echo ""; echo ""; echo ""; echo w; echo q) | fdisk $(echo $5)
