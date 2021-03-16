@@ -47,6 +47,7 @@ esac
 echo "# Custom settings." >> /etc/vsftpd.conf
 sed -i 's/#write_enable=YES/write_enable=YES/g' /etc/vsftpd.conf
 sed -i 's/#chroot_local_user=YES/chroot_local_user=YES/1' /etc/vsftpd.conf
+sed -i 's/connect_from_port_20=YES/connect_from_port_20=NO/1' /etc/vsftpd.conf
 echo "user_sub_token=\$USER" >> /etc/vsftpd.conf
 echo "local_root=/backups/\$USER/ftp" >> /etc/vsftpd.conf
 echo "pasv_min_port=30000" >> /etc/vsftpd.conf
