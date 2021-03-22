@@ -2,7 +2,7 @@
 <?php
 
 $use_pasv = true;
-$url_curl = false;
+$url_curl = true;
 
 $ftp_server = getenv("ftp_ip");
 $ftp_user_name = getenv("ftp_username");
