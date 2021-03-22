@@ -46,6 +46,7 @@ sed -i "s/curl=no/curl=yes/g" options.conf
 
 # Apply patched scripts for backup with (explicit) FTPS.
 cd /usr/local/directadmin/scripts/custom/
+wget -O ftp_download.php https://$dpdomain/debian/reuse-scripts/standard/patched/directadmin/ftp_download.php
 wget -O ftp_upload.php https://$dpdomain/debian/reuse-scripts/standard/patched/directadmin/ftp_upload.php
 wget -O ftp_list.php https://$dpdomain/debian/reuse-scripts/standard/patched/directadmin/ftp_list.php
 
