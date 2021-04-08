@@ -51,10 +51,12 @@ case $2 in
 	;;
 esac
 
+wget https://$dpdomain/debian/reuse-scripts/standard/scripts/add_ssh_user.sh
+chmod 700 add_ssh_user.sh
 chown root:root /backups
 
 groupadd sftpgroup
-sed -i 's/Subsystem/#Subsystem/g' sshd_config
+sed -i 's/Subsystem/#Subsystem/g' /etc/ssh/sshd_config
 echo "Subsystem sftp internal-sftp" >> /etc/ssh/sshd_config
 echo "   Match Group sftpgroup" >> /etc/ssh/sshd_config
 echo "   ChrootDirectory /backups" >> /etc/ssh/sshd_config
