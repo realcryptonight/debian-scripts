@@ -32,7 +32,7 @@ case $2 in
 esac
 
 # Pre-Install commands.
-apt -y install gcc g++ make flex bison openssl libssl-dev perl perl-base perl-modules libperl-dev libperl4-corelibs-perl libwww-perl libaio1 libaio-dev zlib1g zlib1g-dev libcap-dev cron bzip2 zip automake autoconf libtool cmake pkg-config python libdb-dev libsasl2-dev libncurses5 libncurses5-dev libsystemd-dev bind9 dnsutils quota patch logrotate rsyslog libc6-dev libexpat1-dev libcrypt-openssl-rsa-perl libnuma-dev libnuma1
+apt -y install sshpass gcc g++ make flex bison openssl libssl-dev perl perl-base perl-modules libperl-dev libperl4-corelibs-perl libwww-perl libaio1 libaio-dev zlib1g zlib1g-dev libcap-dev cron bzip2 zip automake autoconf libtool cmake pkg-config python libdb-dev libsasl2-dev libncurses5 libncurses5-dev libsystemd-dev bind9 dnsutils quota patch logrotate rsyslog libc6-dev libexpat1-dev libcrypt-openssl-rsa-perl libnuma-dev libnuma1
 
 # Download and run DirectAdmin install script.
 wget -O install.sh https://www.directadmin.com/setup.sh
@@ -44,11 +44,15 @@ cd /usr/local/directadmin/custombuild
 sed -i "s/curl=no/curl=yes/g" options.conf
 ./build curl
 
-# Apply patched scripts for backup with (explicit) FTPS.
+# Install the updated script fot SSH.
 cd /usr/local/directadmin/scripts/custom/
-wget -O ftp_download.php https://$dpdomain/debian/reuse-scripts/standard/patched/directadmin/ftp_download.php
-wget -O ftp_upload.php https://$dpdomain/debian/reuse-scripts/standard/patched/directadmin/ftp_upload.php
-wget -O ftp_list.php https://$dpdomain/debian/reuse-scripts/standard/patched/directadmin/ftp_list.php
+wget -O ssh_script.zip https://github.com/poralix/directadmin-sftp-backups/archive/refs/heads/master.zip
+unzip ssh_script.zip
+cd directadmin-sftp-backups-master/
+mv ftp_*.php ./../
+cd ..
+rm -rf directadmin-sftp-backups-master/
+rm ssh_script.zip
 
 
 # Install Let's Encrypt SSL for DirectAdmin Web Interface.
