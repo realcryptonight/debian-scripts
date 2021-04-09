@@ -54,7 +54,6 @@ cd ..
 rm -rf directadmin-sftp-backups-master/
 rm ssh_script.zip
 
-
 # Install Let's Encrypt SSL for DirectAdmin Web Interface.
 cd /usr/local/directadmin/custombuild
 ./build rewrite_confs
