@@ -65,8 +65,11 @@ cd /usr/local/directadmin/custombuild
 service directadmin restart
 	
 # Allow the mail server to use the SSL from the website.
+# And setup DKIM.
 echo "mail_sni=1" >> /usr/local/directadmin/conf/directadmin.conf
 service directadmin restart
+cd /usr/local/directadmin
+./directadmin set dkim 2
 cd /usr/local/directadmin/custombuild
 ./build clean
 ./build update
@@ -75,6 +78,8 @@ cd /usr/local/directadmin/custombuild
 ./build set dovecot_conf yes
 ./build exim_conf
 ./build dovecot_conf
+./build exim
+./build eximconf
 echo "action=rewrite&value=mail_sni" >> /usr/local/directadmin/data/task.queue
 
 # Clean up.
