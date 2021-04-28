@@ -1,18 +1,18 @@
 #!/bin/bash
 
 # Check if all args are given
-if [ -z "$0" ]
+if [ -z "$1" ]
 then
 	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no>"
     exit 1
 else
-    echo $0 > /deploy.txt
+    echo $1 > /deploy.txt
 fi
 
 # Get the deploy domain.
 dpdomain=`cat /deploy.txt`
 
-case $1 in
+case $2 in
 	[yY][eE][sS]|[yY])
 		# Install the default settings for the VMware VM server.
 		wget -O vmware-settings.sh https://$dpdomain/debian/reuse-scripts/vmware/scripts/vmware-settings.sh
@@ -32,18 +32,27 @@ case $1 in
 esac
 
 # Pre-Install commands.
-apt -y install curl gcc g++ make flex bison openssl libssl-dev perl perl-base perl-modules libperl-dev libperl4-corelibs-perl libwww-perl libaio1 libaio-dev zlib1g zlib1g-dev libcap-dev cron bzip2 zip automake autoconf libtool cmake pkg-config python libdb-dev libsasl2-dev libncurses5 libncurses5-dev libsystemd-dev bind9 dnsutils quota patch logrotate rsyslog libc6-dev libexpat1-dev libcrypt-openssl-rsa-perl libnuma-dev libnuma1
+apt -y install sshpass gcc g++ make flex bison openssl libssl-dev perl perl-base perl-modules libperl-dev libperl4-corelibs-perl libwww-perl libaio1 libaio-dev zlib1g zlib1g-dev libcap-dev cron bzip2 zip automake autoconf libtool cmake pkg-config python libdb-dev libsasl2-dev libncurses5 libncurses5-dev libsystemd-dev bind9 dnsutils quota patch logrotate rsyslog libc6-dev libexpat1-dev libcrypt-openssl-rsa-perl libnuma-dev libnuma1
 
 # Download and run DirectAdmin install script.
 wget -O install.sh https://www.directadmin.com/setup.sh
 chmod 755 install.sh
 ./install.sh auto
 
-	
-# Change default FTP script to use ftps instead of ftp.
-sed -i "s/ftp:\/\//ftps:\/\//g" /usr/local/directadmin/scripts/ftp_list.php
-sed -i "s/ftp:\/\//ftps:\/\//g" /usr/local/directadmin/scripts/ftp_download.php
-sed -i "s/ftp:\/\//ftps:\/\//g" /usr/local/directadmin/scripts/ftp_upload.php
+# Install Curl via custombuilds.
+cd /usr/local/directadmin/custombuild
+sed -i "s/curl=no/curl=yes/g" options.conf
+./build curl
+
+# Install the updated script fot SSH.
+cd /usr/local/directadmin/scripts/custom/
+wget -O ssh_script.zip https://github.com/poralix/directadmin-sftp-backups/archive/refs/heads/master.zip
+unzip ssh_script.zip
+cd directadmin-sftp-backups-master/
+mv ftp_*.php ./../
+cd ..
+rm -rf directadmin-sftp-backups-master/
+rm ssh_script.zip
 
 # Install Let's Encrypt SSL for DirectAdmin Web Interface.
 cd /usr/local/directadmin/custombuild

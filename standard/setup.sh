@@ -1,18 +1,18 @@
 #!/bin/bash
 
 # Check if all args are given
-if [ -z "$0" ]
+if [ -z "$1" ]
 then
 	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no>"
     exit 1
 else
-    echo $0 > /deploy.txt
+    echo $1 > /deploy.txt
 fi
 
 # Get the deploy domain.
 dpdomain=`cat /deploy.txt`
 
-case $1 in
+case $2 in
 	[yY][eE][sS]|[yY])
 		# Install the default settings for the VMware VM server.
 		wget -O vmware-settings.sh https://$dpdomain/debian/reuse-scripts/vmware/scripts/vmware-settings.sh
