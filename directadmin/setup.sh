@@ -43,6 +43,7 @@ chmod 755 install.sh
 cd /usr/local/directadmin/custombuild
 sed -i "s/curl=no/curl=yes/g" options.conf
 ./build curl
+./build php n
 
 # Install the updated script fot SSH.
 cd /usr/local/directadmin/scripts/custom/
