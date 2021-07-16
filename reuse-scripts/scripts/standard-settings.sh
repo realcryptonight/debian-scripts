@@ -4,11 +4,11 @@
 dpdomain=`cat /deploy.txt`
 
 # Get the files from the deploy server.
-wget -O authorized_keys https://$dpdomain/debian/reuse-scripts/standard/keys/authorized_keys
-wget -O 00-header https://$dpdomain/debian/reuse-scripts/standard/banners/00-header
-wget -O 10-sysinfo https://$dpdomain/debian/reuse-scripts/standard/banners/10-sysinfo
-wget -O 10-uname https://$dpdomain/debian/reuse-scripts/standard/banners/10-uname
-wget -O 90-footer https://$dpdomain/debian/reuse-scripts/standard/banners/90-footer
+wget -O authorized_keys https://$dpdomain/debian/reuse-scripts/keys/authorized_keys
+wget -O 00-header https://$dpdomain/debian/reuse-scripts/banners/00-header
+wget -O 10-sysinfo https://$dpdomain/debian/reuse-scripts/banners/10-sysinfo
+wget -O 10-uname https://$dpdomain/debian/reuse-scripts/banners/10-uname
+wget -O 90-footer https://$dpdomain/debian/reuse-scripts/banners/90-footer
 
 # Setup SSH keys authentication.
 mkdir .ssh
