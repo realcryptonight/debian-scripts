@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Check if all args are given
 if [ -z "$1" ]
 then
 	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <backup disk (Optional)>"
