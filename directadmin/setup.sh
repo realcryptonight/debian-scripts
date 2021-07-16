@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Check if all args are given
 if [ -z "$1" ]
 then
-	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no>"
+	echo "Invalid arguments. Use: ./setup.sh <deployment server address>"
     exit 1
 else
     echo $1 > /deploy.txt
@@ -11,25 +10,11 @@ fi
 
 # Get the deploy domain.
 dpdomain=`cat /deploy.txt`
-
-case $2 in
-	[yY][eE][sS]|[yY])
-		# Install the default settings for the VMware VM server.
-		wget -O vmware-settings.sh https://$dpdomain/debian/reuse-scripts/vmware/scripts/vmware-settings.sh
-		chmod 777 vmware-settings.sh
-		./vmware-settings.sh
-	;;
-	[nN][oO]|[nN])
-		# Install the default settings for the server.
-		wget -O standard-settings.sh https://$dpdomain/debian/reuse-scripts/standard/scripts/standard-settings.sh
-		chmod 777 standard-settings.sh
-		./standard-settings.sh
-	;;
-	*)
-		echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no>"
-		exit 1
-	;;
-esac
+		
+# Install the default settings for the server.
+wget -O standard-settings.sh https://$dpdomain/debian/reuse-scripts/scripts/standard-settings.sh
+chmod 777 standard-settings.sh
+./standard-settings.sh
 
 # Pre-Install commands.
 apt -y install sshpass gcc g++ make flex bison openssl libssl-dev perl perl-base perl-modules libperl-dev libperl4-corelibs-perl libwww-perl libaio1 libaio-dev zlib1g zlib1g-dev libcap-dev cron bzip2 zip automake autoconf libtool cmake pkg-config python libdb-dev libsasl2-dev libncurses5 libncurses5-dev libsystemd-dev bind9 dnsutils quota patch logrotate rsyslog libc6-dev libexpat1-dev libcrypt-openssl-rsa-perl libnuma-dev libnuma1
@@ -44,7 +29,7 @@ cd /usr/local/directadmin/custombuild
 sed -i "s/curl=no/curl=yes/g" options.conf
 ./build curl
 
-# Install the updated script fot SSH.
+# Install the updated script for SSH backups.
 cd /usr/local/directadmin/scripts/custom/
 wget -O ssh_script.zip https://github.com/poralix/directadmin-sftp-backups/archive/refs/heads/master.zip
 unzip ssh_script.zip
@@ -76,6 +61,10 @@ cd /usr/local/directadmin/custombuild
 ./build exim_conf
 ./build dovecot_conf
 echo "action=rewrite&value=mail_sni" >> /usr/local/directadmin/data/task.queue
+
+# Allow DirectAdmin to always add DKIM.
+cd /usr/local/directadmin
+./directadmin set dkim 1
 
 # Clean up.
 cd /root/

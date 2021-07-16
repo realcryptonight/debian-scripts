@@ -3,13 +3,13 @@
 # Check if all args are given
 if [ -z "$1" ]
 then
-	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup disk (Optional)>"
+	echo "Invalid arguments. Use: ./setup.sh <deployment server address> <backup disk (Optional)>"
     exit 1
 else
     echo $1 > /deploy.txt
 fi
 
-if [ -z "$3" ]
+if [ -z "$2" ]
 then
 	adddisk=0
 else
@@ -18,11 +18,11 @@ fi
 
 if [[ "$adddisk" == 1 ]]
 then
-	(echo n; echo ""; echo ""; echo ""; echo ""; echo w; echo q) | fdisk $(echo $3)
-	mkfs.ext4 $3
+	(echo n; echo ""; echo ""; echo ""; echo ""; echo w; echo q) | fdisk $(echo $2)
+	mkfs.ext4 $2
 	mkdir /backups
-	mount $3 /backups
-	echo "${3} /backups ext4 defaults 1 2" >> /etc/fstab
+	mount $2 /backups
+	echo "${2} /backups ext4 defaults 1 2" >> /etc/fstab
 else
 	echo ''
 fi
@@ -30,28 +30,12 @@ fi
 # Get the deploy domain.
 dpdomain=`cat /deploy.txt`
 
-case $2 in
-	[yY][eE][sS]|[yY])
-		# Install the default settings for the VMware VM server.
-		wget -O vmware-settings.sh https://$dpdomain/debian/reuse-scripts/vmware/scripts/vmware-settings.sh
-		chmod 777 vmware-settings.sh
-		./vmware-settings.sh
-	;;
-	[nN][oO]|[nN])
-		# Install the default settings for the server.
-		wget -O standard-settings.sh https://$dpdomain/debian/reuse-scripts/standard/scripts/standard-settings.sh
-		chmod 777 standard-settings.sh
-		./standard-settings.sh
-		# Create the location that on the VMware VM an new disk would be.
-		mkdir /backups
-	;;
-	*)
-		echo "Invalid arguments. Use: ./setup.sh <deployment server address> <is VMware VM yes|no> <backup disk (Optional)>"
-		exit 1
-	;;
-esac
+# Install the default settings for the server.
+wget -O standard-settings.sh https://$dpdomain/debian/reuse-scripts/scripts/standard-settings.sh
+chmod 777 standard-settings.sh
+./standard-settings.sh
 
-wget https://$dpdomain/debian/reuse-scripts/standard/scripts/add_ssh_user.sh
+wget https://$dpdomain/debian/reuse-scripts/scripts/add_ssh_user.sh
 chmod 700 add_ssh_user.sh
 chown root:root /backups
 
