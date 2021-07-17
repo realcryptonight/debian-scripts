@@ -62,9 +62,15 @@ cd /usr/local/directadmin/custombuild
 ./build dovecot_conf
 echo "action=rewrite&value=mail_sni" >> /usr/local/directadmin/data/task.queue
 
-# Allow DirectAdmin to always add DKIM.
+# Allow DirectAdmin to always add DKIM and DMARC.
 cd /usr/local/directadmin
 ./directadmin set dkim 1
+cd /usr/local/directadmin/data/templates/custom
+cp ../dns_txt.conf .
+. /usr/local/directadmin/scripts/setup.txt
+echo '_dmarc="v=DMARC1;p=quarantine; rua=mailto:admin@'"$hostname"'"' >> dns_txt.conf
+# Forward root emails to admin. (done because of DA sending emails from and to root.)
+echo "root: $hostname" >> /etc/aliases
 
 # Clean up.
 cd /root/
